@@ -24,28 +24,46 @@ var pieces = reactive([
 
 // common function to move puzzle
 function move(x: number, y: number, newX: number, newY: number) {
-    console.log('move')
     // swap position
     var pieceToMove = pieces[y][x]
     pieces[y][x] = pieces[newY][newX]
     pieces[newY][newX] = pieceToMove
-    console.log(pieces)
 }
 function moveUp(x: number, y: number) {
     if (y === 0) return -1
+    console.log('moveUp')
     move(x, y, x, y - 1)
+    return {
+        x: x,
+        y: y - 1,
+    }
 }
 function moveDown(x: number, y: number) {
     if (y >= pieces.length - 1) return -1
+    console.log('moveDown')
     move(x, y, x, y + 1)
+    return {
+        x: x,
+        y: y + 1,
+    }
 }
 function moveLeft(x: number, y: number) {
     if (x === 0) return -1
+    console.log('moveLeft')
     move(x, y, x - 1, y)
+    return {
+        x: x - 1,
+        y: y,
+    }
 }
 function moveRight(x: number, y: number) {
-    if (x > pieces[y].length - 1) return -1
+    if (x >= pieces[y].length - 1) return -1
+    console.log('moveRight')
     move(x, y, x + 1, y)
+    return {
+        x: x + 1,
+        y: y,
+    }
 }
 function handleMove(x: number, y: number) {
     //2,1
@@ -83,9 +101,8 @@ function seekEmpty() {
 function initGame() {
     var level = 3 // 决定拼图碎片数量
     pieces = createMatrix(level)
-    // var difficulty = 5 // 决定碎片打乱次数
-    // var numberOfPieces = (level + 1) * (level + 1)
-    console.log(pieces)
+    var difficulty = 5 // 决定碎片打乱次数 (difficulty * 5 = 次数)
+    moveInit(difficulty)
 }
 
 function createMatrix(level: number) {
@@ -106,6 +123,30 @@ function createMatrix(level: number) {
         matrix.push(rowP)
     }
     return reactive(matrix)
+}
+
+function moveInit(diff: number) {
+    const fns = [moveUp, moveRight, moveDown, moveLeft]
+    let count = 1
+    let lastMove = -1
+    let fn
+    let moveTimes = diff * 5
+    var { emptyX, emptyY } = seekEmpty() // 2, 2
+    while (count <= moveTimes) {
+        const randomIndex: number = Math.floor(Math.random() * 4)
+        if (randomIndex + 2 === lastMove || randomIndex - 2 === lastMove) {
+            console.log('same as last move, skip')
+        } else {
+            fn = fns[randomIndex](emptyX, emptyY)
+            if (fn != -1) {
+                lastMove = randomIndex
+                var { x, y } = fn
+                emptyX = x
+                emptyY = y
+                count += 1
+            }
+        }
+    }
 }
 
 initGame()
