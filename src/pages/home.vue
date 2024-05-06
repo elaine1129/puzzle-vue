@@ -1,6 +1,6 @@
 <template>
-    <!-- Puzzle -->
-    <Puzzle></Puzzle>
+  <!-- Puzzle -->
+  <Puzzle></Puzzle>
 </template>
 
 <script setup lang="ts">
