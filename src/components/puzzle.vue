@@ -1,5 +1,4 @@
 <template>
-  {{ pieces }}
   <div class="puzzle">
     <div v-for="(row, i) in pieces" class="puzzle_row">
       <div
@@ -12,15 +11,19 @@
       </div>
     </div>
   </div>
+  <wDialog :dialog="winDialog" title="Congratulations!" content="You win!" @close="closeWinDialog"></wDialog>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref, onMounted, watch } from 'vue'
+import wDialog from "./dialog.vue"
 var pieces = reactive([
   [1, 2, 3],
   [4, 5, 6],
   [7, 8, 0],
 ])
+const level: number = 1  // 决定拼图碎片数量
+const difficulty: number = 1 // 决定碎片打乱次数 (difficulty * 5 = 次数)
 
 // common function to move puzzle
 function move(x: number, y: number, newX: number, newY: number) {
@@ -31,7 +34,6 @@ function move(x: number, y: number, newX: number, newY: number) {
 }
 function moveUp(x: number, y: number) {
   if (y === 0) return -1
-  console.log('moveUp')
   move(x, y, x, y - 1)
   return {
     x: x,
@@ -40,7 +42,6 @@ function moveUp(x: number, y: number) {
 }
 function moveDown(x: number, y: number) {
   if (y >= pieces.length - 1) return -1
-  console.log('moveDown')
   move(x, y, x, y + 1)
   return {
     x: x,
@@ -49,7 +50,6 @@ function moveDown(x: number, y: number) {
 }
 function moveLeft(x: number, y: number) {
   if (x === 0) return -1
-  console.log('moveLeft')
   move(x, y, x - 1, y)
   return {
     x: x - 1,
@@ -58,7 +58,6 @@ function moveLeft(x: number, y: number) {
 }
 function moveRight(x: number, y: number) {
   if (x >= pieces[y].length - 1) return -1
-  console.log('moveRight')
   move(x, y, x + 1, y)
   return {
     x: x + 1,
@@ -66,8 +65,9 @@ function moveRight(x: number, y: number) {
   }
 }
 function handleMove(x: number, y: number) {
-  //2,1
-  var { emptyX, emptyY } = seekEmpty() // 2, 2
+  if (checkWin()) return;
+
+  var { emptyX, emptyY } = seekEmpty() 
   if (emptyX === x) {
     if (emptyY - y === 1) {
       moveDown(x, y)
@@ -99,9 +99,7 @@ function seekEmpty() {
   }
 }
 function initGame() {
-  var level = 3 // 决定拼图碎片数量
   pieces = createMatrix(level)
-  var difficulty = 5 // 决定碎片打乱次数 (difficulty * 5 = 次数)
   moveInit(difficulty)
 }
 
@@ -134,9 +132,7 @@ function moveInit(diff: number) {
   var { emptyX, emptyY } = seekEmpty() // 2, 2
   while (count <= moveTimes) {
     const randomIndex: number = Math.floor(Math.random() * 4)
-    if (randomIndex + 2 === lastMove || randomIndex - 2 === lastMove) {
-      console.log('same as last move, skip')
-    } else {
+    if (randomIndex + 2 !== lastMove && randomIndex - 2 !== lastMove) {
       fn = fns[randomIndex](emptyX, emptyY)
       if (fn != -1) {
         lastMove = randomIndex
@@ -148,8 +144,29 @@ function moveInit(diff: number) {
     }
   }
 }
-
+function checkWin() {
+  var flatten = pieces.flat()
+  for (var i = 1; i < flatten.length; i++){
+    if (flatten[i - 1] !== i) {
+      return false
+    }
+  }
+  return true
+}
+function closeWinDialog() {
+  winDialog.value = false
+}
 initGame()
+
+onMounted(() => {
+});
+var winDialog = ref(false)
+
+watch(pieces, () => {
+  if (checkWin()) {
+   winDialog.value = true
+  }
+}, {deep: true})
 </script>
 
 <style lang="less">
