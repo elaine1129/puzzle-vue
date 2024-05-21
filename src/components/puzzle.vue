@@ -15,158 +15,31 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, defineExpose} from 'vue'
 import wDialog from "./dialog.vue"
-var pieces = reactive([
-  [1, 2, 3],
-  [4, 5, 6],
-  [7, 8, 0],
-])
-const level: number = 1  // 决定拼图碎片数量
-const difficulty: number = 1 // 决定碎片打乱次数 (difficulty * 5 = 次数)
-
-// common function to move puzzle
-function move(x: number, y: number, newX: number, newY: number) {
-  // swap position
-  var pieceToMove = pieces[y][x]
-  pieces[y][x] = pieces[newY][newX]
-  pieces[newY][newX] = pieceToMove
-}
-function moveUp(x: number, y: number) {
-  if (y === 0) return -1
-  move(x, y, x, y - 1)
-  return {
-    x: x,
-    y: y - 1,
-  }
-}
-function moveDown(x: number, y: number) {
-  if (y >= pieces.length - 1) return -1
-  move(x, y, x, y + 1)
-  return {
-    x: x,
-    y: y + 1,
-  }
-}
-function moveLeft(x: number, y: number) {
-  if (x === 0) return -1
-  move(x, y, x - 1, y)
-  return {
-    x: x - 1,
-    y: y,
-  }
-}
-function moveRight(x: number, y: number) {
-  if (x >= pieces[y].length - 1) return -1
-  move(x, y, x + 1, y)
-  return {
-    x: x + 1,
-    y: y,
-  }
-}
-function handleMove(x: number, y: number) {
-  if (checkWin()) return;
-
-  var { emptyX, emptyY } = seekEmpty() 
-  if (emptyX === x) {
-    if (emptyY - y === 1) {
-      moveDown(x, y)
-    } else if (y - emptyY === 1) {
-      moveUp(x, y)
-    }
-  } else if (emptyY === y) {
-    if (emptyX - x === 1) {
-      moveRight(x, y)
-    } else if (x - emptyX === 1) {
-      moveLeft(x, y)
-    }
-  }
-}
-function seekEmpty() {
-  for (var i in pieces) {
-    for (var j in pieces[i]) {
-      if (Number(pieces[i][j]) === 0) {
-        return {
-          emptyX: Number(j),
-          emptyY: Number(i),
-        }
-      }
-    }
-  }
-  return {
-    emptyX: -1,
-    emptyY: -1,
-  }
-}
-function initGame() {
-  pieces = createMatrix(level)
-  moveInit(difficulty)
-}
-
-function createMatrix(level: number) {
-  const row = level + 1
-  const col = level + 1
-  let count = 1
-  var matrix = []
-  for (let i = 0; i < row; i++) {
-    var rowP = []
-    for (let j = 0; j < col; j++) {
-      if (count === row * col) {
-        rowP.push(0)
-        break
-      }
-      rowP.push(count)
-      count++
-    }
-    matrix.push(rowP)
-  }
-  return reactive(matrix)
-}
-
-function moveInit(diff: number) {
-  const fns = [moveUp, moveRight, moveDown, moveLeft]
-  let count = 1
-  let lastMove = -1
-  let fn
-  let moveTimes = diff * 5
-  var { emptyX, emptyY } = seekEmpty() // 2, 2
-  while (count <= moveTimes) {
-    const randomIndex: number = Math.floor(Math.random() * 4)
-    if (randomIndex + 2 !== lastMove && randomIndex - 2 !== lastMove) {
-      fn = fns[randomIndex](emptyX, emptyY)
-      if (fn != -1) {
-        lastMove = randomIndex
-        var { x, y } = fn
-        emptyX = x
-        emptyY = y
-        count += 1
-      }
-    }
-  }
-}
-function checkWin() {
-  var flatten = pieces.flat()
-  for (var i = 1; i < flatten.length; i++){
-    if (flatten[i - 1] !== i) {
-      return false
-    }
-  }
-  return true
-}
+import createGame from "../utils/puzzle"
+var { pieces, initGame, setConfig, checkWin, handleMove } = createGame() //初始化 
+setConfig(1, 1) //初始化 
+initGame()
 function closeWinDialog() {
   winDialog.value = false
 }
-initGame()
-
-onMounted(() => {
-});
+function start(level: number, difficulties: number) {
+  setConfig(level, difficulties)
+  initGame()
+}
 var winDialog = ref(false)
-
 watch(pieces, () => {
   if (checkWin()) {
    winDialog.value = true
   }
-}, {deep: true})
+}, { deep: true, immediate: true })
+onMounted(() => {
+  
+})
+defineExpose({
+  start
+})
 </script>
 
 <style lang="less">
