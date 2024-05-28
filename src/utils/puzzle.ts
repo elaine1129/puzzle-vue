@@ -105,7 +105,7 @@ export default function createGame() {
     let count = 1
     let lastMove = -1
     let fn
-    let moveTimes = diff * 5
+    let moveTimes = diff * diff
     var { emptyX, emptyY } = seekEmpty() // 2, 2
     while (count <= moveTimes) {
       const randomIndex: number = Math.floor(Math.random() * 4)

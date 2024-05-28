@@ -1,0 +1,12 @@
+.layout_center_center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@num-loops: 20;
+each(range(@num-loops), {
+  .gap-@{value} {
+    gap: (@value * 1px);
+  }
+})
