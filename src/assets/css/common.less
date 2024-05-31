@@ -1,10 +1,43 @@
+.v-layout {
+  display: block;
+}
+
 .layout_center_center {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+.mg-l-auto {
+  margin-left: auto;
+}
+.mg-r-auto {
+  margin-right: auto;
+}
+.mg-t-auto {
+  margin-top: auto;
+}
+.mg-b-auto {
+  margin-bottom: auto;
+}
+
 @num-loops: 20;
+
+each(range(@num-loops), {
+  .mg-l-@{value} {
+    margin-left: (@value * 1px);
+  }
+  .mg-r-@{value} {
+    margin-right: (@value * 1px);
+  }
+  .mg-t-@{value} {
+    margin-top: (@value * 1px);
+  }
+  .mg-b-@{value} {
+    margin-bottom: (@value * 1px);
+  }
+})
+
 each(range(@num-loops), {
   .gap-@{value} {
     gap: (@value * 1px);

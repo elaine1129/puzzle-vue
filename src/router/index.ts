@@ -2,7 +2,7 @@ import { createWebHashHistory, createRouter, RouteRecordRaw } from "vue-router";
 
 import Home from '../pages/home.vue'
 import Game from '../pages/game.vue'
-
+import Settings from "../pages/settings.vue";
 const routes: Array<RouteRecordRaw> = [
   { //首页
     path: '/',
@@ -13,6 +13,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/game',
     component: Game,
     name: 'Game',
+  },
+  {
+    path: '/setting',
+    component: Settings,
+    name: 'Settings'
   }
 ]
 
