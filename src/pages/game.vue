@@ -45,7 +45,6 @@ import { reactive, watch, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Puzzle from '../components/puzzle.vue'
 
-const router = useRouter()
 const route = useRoute()
 var state = ref({
   gameMode: 1, // 1: 快速模式 2: 闯关模式

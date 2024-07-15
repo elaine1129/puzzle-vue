@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, getCurrentInstance } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted } from 'vue';
 import { DEFAULT_IMG_LIST } from '../utils/conf.ts'
 var piecesMode = ref(0) // 0: 数字模式； 1: 图片模式
 var image = ref(0)
@@ -46,11 +46,17 @@ function getImgSrc(path: string) {
 }
 const instance = getCurrentInstance();
 const $confirm = instance?.appContext.config.globalProperties.$confirm
-console.log(instance, $confirm)
+
 function handleSave() {
   localStorage.setItem("config", JSON.stringify({ type: piecesMode.value, value: image.value }))
   $confirm?.success('Save successfully');
 }
+onMounted(() => {
+  var configItem =  localStorage.getItem("config")
+  var savedConfig = configItem ? JSON.parse(configItem) : null
+  piecesMode.value = savedConfig.type
+  image.value = savedConfig.value
+})
 </script>
 
 <style scoped>

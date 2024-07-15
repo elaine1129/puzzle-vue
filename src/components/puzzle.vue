@@ -1,14 +1,15 @@
 <template>
   <div class="puzzle">
-    <div v-for="(row, i) in pieces" class="puzzle_row">
+    <div v-for="(row, i) in pieces" :key="i" class="puzzle_row">
       <div
         class="piece"
         v-for="(col, j) in row"
-        :class="{ empty: col === 0 }"
-        :style="`width: ${puzzleWidth}px; height: ${puzzleWidth}px;`"
+        :key="j" 
+        :class="{ empty: col.value === 0 }"
+        :style="`width: ${puzzleWidth}px; height: ${puzzleWidth}px;` +  ( col.bgImg ? `background-image: url(${col.bgImg}); background-size: cover;` : '')"
         @click="handleMove(j, i)"
       >
-        {{ col !== 0 ? col : '' }}
+        {{ col.value !== 0 ? col.value : '' }}
       </div>
     </div>
   </div>
@@ -25,6 +26,7 @@ const emit = defineEmits(['ON_WIN'])
 
 setConfig(1, 1) //初始化 
 initGame()
+
 function closeWinDialog() {
   winDialog.value = false
   emit('ON_WIN')
@@ -40,7 +42,6 @@ watch(pieces, () => {
   }
 }, { deep: true, immediate: true })
 onMounted(() => {
-  
 })
 const puzzleWidth = computed(() => {
   return ((510 / pieces.value.length)- 10) // 500px 除以一行的piece数 在减去gap

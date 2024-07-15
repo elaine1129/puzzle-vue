@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 const router = useRouter()
 const route = useRoute()
 
@@ -20,6 +20,9 @@ const isHome = computed(() => {
 function routerLink(routeName: string) {
   router.push({ name: routeName })
 }
+onMounted(()=> {
+  localStorage.setItem("config", JSON.stringify({ type: 0, value: '' }))
+})
 </script>
 
 <style scoped></style>

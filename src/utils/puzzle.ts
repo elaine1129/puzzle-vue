@@ -1,6 +1,7 @@
-import { reactive, ref } from "vue"
+import { reactive, ref, Ref } from "vue"
+import { DEFAULT_IMG_LIST } from "./conf";
 export default function createGame() {
-  var pieces = ref([])
+  var pieces: Ref<Array<Array<{ value: number;  bgImg: string}>>> = ref([])
   var state = ref({
     level: 1,
     difficulty: 1
@@ -67,37 +68,102 @@ export default function createGame() {
     }
   }
   function checkWin() {
-    var flatten = pieces.value.flat()
-    for (var i = 1; i < flatten.length; i++){
-      if (flatten[i - 1] !== i) {
-        return false
+    var flatten = pieces.value.flat().map(item => item.value)
+    if (flatten.length > 0) {
+      for (var i = 1; i < flatten.length; i++){
+        if (flatten[i - 1] !== i) {
+          return false
+        }
       }
+      return true
+      
     }
-    return true
+    return false
   }
-  function initGame() {
-    pieces.value = createMatrix(state.value.level)
+  async function initGame() {
+    try {
+      pieces.value = await createMatrix(state.value.level)
+    } catch (error) {
+      console.error('Error creating matrix')
+    }
     moveInit(state.value.difficulty)
   }
-  
-  function createMatrix(level: number) {
+  var canvasInstance: HTMLCanvasElement | null = null
+  var imageInstance: HTMLImageElement | null = null
+  interface MatrixItem {
+    value: number;
+    bgImg: string
+  }
+  function createMatrix(level: number) : Promise<Array<Array<MatrixItem>>> {
     const row = level + 1
     const col = level + 1
     let count = 1
-    var matrix = []
-    for (let i = 0; i < row; i++) {
-      var rowP = []
-      for (let j = 0; j < col; j++) {
-        if (count === row * col) {
-          rowP.push(0)
-          break
+    var matrix: MatrixItem[][] = []
+    var configItem = localStorage.getItem("config")
+    var savedConfig: { type: number; value: number; } | null = configItem ? JSON.parse(configItem) : null
+    if (savedConfig?.type) {  
+      return new Promise((resolve, reject) => {
+        if (!canvasInstance) {
+          // prepare canvas
+          canvasInstance = document.createElement("canvas")
         }
-        rowP.push(count)
-        count++
-      }
-      matrix.push(rowP)
+        if (canvasInstance) {
+          const ctx = canvasInstance.getContext('2d');
+          if (ctx) {
+            // Load image
+            if (!imageInstance) {
+              imageInstance = new Image()
+            }
+            imageInstance.onload = () => {
+              const pieceWidth = imageInstance!.width / col
+              const pieceHeight = imageInstance!.height / row
+             
+              for (let i = 0; i < row; i++) {
+                var rowP: MatrixItem[] = []
+                for (let j = 0; j < col; j++) {
+                  ctx.clearRect(0, 0, canvasInstance!.width, canvasInstance!.height);
+                  ctx.drawImage(imageInstance!,
+                    j * pieceWidth, i * pieceHeight, pieceWidth, pieceHeight,
+                    0, 0, 150, 150);
+                  if (count === row * col) {
+                    rowP.push({value: 0, bgImg: canvasInstance!.toDataURL()})
+                    break
+                  }
+                  rowP.push({value: count, bgImg: canvasInstance!.toDataURL()})
+                  count++
+                }
+                matrix.push(rowP)
+              }
+              resolve(reactive(matrix))
+            };
+            imageInstance.onerror = (error) => {
+              console.error('Failed to load image:', error);
+              reject(error)
+            };
+            if (savedConfig?.value) {
+              imageInstance.src = new URL(DEFAULT_IMG_LIST[savedConfig.value].path, import.meta.url).href
+            }
+            
+          }
+        }
+      })
+    } else {
+      return new Promise((resolve, reject) => {
+        for (let i = 0; i < row; i++) {
+          var rowP: MatrixItem[] = []
+          for (let j = 0; j < col; j++) {
+            if (count === row * col) {
+              rowP.push({value: 0, bgImg: ""})
+              break
+            }
+            rowP.push({value: count, bgImg: ""})
+            count++
+          }
+          matrix.push(rowP)
+        }
+        resolve(reactive(matrix))
+      })     
     }
-    return reactive(matrix)
   }
   
   function moveInit(diff: number) {
@@ -124,7 +190,7 @@ export default function createGame() {
   function seekEmpty() {
     for (var i in pieces.value) {
       for (var j in pieces.value[i]) {
-        if (Number(pieces.value[i][j]) === 0) {
+        if (Number(pieces.value[i][j]["value"]) === 0) {
           return {
             emptyX: Number(j),
             emptyY: Number(i),
