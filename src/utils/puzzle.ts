@@ -140,8 +140,12 @@ export default function createGame() {
               console.error('Failed to load image:', error);
               reject(error)
             };
-            if (savedConfig?.value) {
-              imageInstance.src = new URL(DEFAULT_IMG_LIST[savedConfig.value].path, import.meta.url).href
+            if (savedConfig) {
+              if (typeof savedConfig.value === 'number') {
+                imageInstance.src = new URL(DEFAULT_IMG_LIST[savedConfig.value].path, import.meta.url).href
+              } else {
+                imageInstance.src = JSON.parse(savedConfig.value).uri
+              }
             }
             
           }

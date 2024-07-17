@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { reactive, watch, ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Puzzle from '../components/puzzle.vue'
 
 const route = useRoute()

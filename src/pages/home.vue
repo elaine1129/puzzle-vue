@@ -7,9 +7,8 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 const router = useRouter()
-const route = useRoute()
 function enterGame(mode = 'quick') {
   router.push({
     name: "Game",
